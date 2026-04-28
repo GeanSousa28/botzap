@@ -9,33 +9,45 @@ async function startBot() {
 
   sock.ev.on("creds.update", saveCreds);
 
+  // conexão
   sock.ev.on("connection.update", async ({ connection }) => {
     if (connection === "open") {
       console.log("✅ Bot conectado!");
     }
 
     if (connection === "close") {
+      console.log("🔄 Reconectando...");
       startBot();
     }
   });
 
-  // 🔑 GERAR CÓDIGO DE CONEXÃO
-  if (!sock.authState.creds.registered) {
-    const phone = "5598981666909"; //
-    const code = await sock.requestPairingCode(phone);
-    console.log("🔗 Código de conexão:", code);
+  // 🔑 CÓDIGO DE CONEXÃO (SEU NÚMERO)
+  if (!state.creds.registered) {
+    const phoneNumber = "5598981666909";
+    const code = await sock.requestPairingCode(phoneNumber);
+    console.log("📲 Código de conexão:", code);
   }
 
+  // comandos
   sock.ev.on("messages.upsert", async ({ messages }) => {
     const msg = messages[0];
     if (!msg.message) return;
 
     const from = msg.key.remoteJid;
-    const texto = msg.message.conversation || "";
+    const texto =
+      msg.message.conversation ||
+      msg.message.extendedTextMessage?.text ||
+      "";
 
     if (texto === "!menu") {
       await sock.sendMessage(from, {
-        text: "🤖 Bot online!"
+        text: "🤖 Bot online!\n\nComandos:\n!menu\n!ping"
+      });
+    }
+
+    if (texto === "!ping") {
+      await sock.sendMessage(from, {
+        text: "🏓 Pong! Funcionando!"
       });
     }
   });
