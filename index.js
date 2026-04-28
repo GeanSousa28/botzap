@@ -1,4 +1,4 @@
-const { default: makeWASocket, useMultiFileAuthState } = require("@whiskeysockets/baileys");
+const { default: makeWASocket, useMultiFileAuthState, delay } = require("@whiskeysockets/baileys");
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("auth");
@@ -9,26 +9,25 @@ async function startBot() {
 
   sock.ev.on("creds.update", saveCreds);
 
-  // conexão
   sock.ev.on("connection.update", async ({ connection }) => {
     if (connection === "open") {
-      console.log("✅ Bot conectado!");
+      console.log("✅ Conectado com sucesso!");
     }
 
     if (connection === "close") {
       console.log("🔄 Reconectando...");
+      await delay(5000);
       startBot();
     }
   });
 
-  // 🔑 CÓDIGO DE CONEXÃO (SEU NÚMERO)
+  // 🔑 GERA CÓDIGO DE CONEXÃO (SEU NÚMERO)
   if (!state.creds.registered) {
-    const phoneNumber = "5598981666909";
-    const code = await sock.requestPairingCode(phoneNumber);
+    await delay(3000); // espera inicializar
+    const code = await sock.requestPairingCode("5598981666909");
     console.log("📲 Código de conexão:", code);
   }
 
-  // comandos
   sock.ev.on("messages.upsert", async ({ messages }) => {
     const msg = messages[0];
     if (!msg.message) return;
@@ -41,13 +40,7 @@ async function startBot() {
 
     if (texto === "!menu") {
       await sock.sendMessage(from, {
-        text: "🤖 Bot online!\n\nComandos:\n!menu\n!ping"
-      });
-    }
-
-    if (texto === "!ping") {
-      await sock.sendMessage(from, {
-        text: "🏓 Pong! Funcionando!"
+        text: "🤖 Bot online!"
       });
     }
   });
