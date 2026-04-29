@@ -1,4 +1,4 @@
-const { default: makeWASocket, useMultiFileAuthState, delay } = require("@whiskeysockets/baileys");
+import makeWASocket, { useMultiFileAuthState, delay } from "@whiskeysockets/baileys";
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("auth");
@@ -11,7 +11,7 @@ async function startBot() {
 
   sock.ev.on("connection.update", async ({ connection }) => {
     if (connection === "open") {
-      console.log("✅ Conectado com sucesso!");
+      console.log("✅ Conectado!");
     }
 
     if (connection === "close") {
@@ -21,11 +21,10 @@ async function startBot() {
     }
   });
 
-  // 🔑 GERA CÓDIGO DE CONEXÃO (SEU NÚMERO)
   if (!state.creds.registered) {
-    await delay(3000); // espera inicializar
+    await delay(3000);
     const code = await sock.requestPairingCode("5598981666909");
-    console.log("📲 Código de conexão:", code);
+    console.log("📲 Código:", code);
   }
 
   sock.ev.on("messages.upsert", async ({ messages }) => {
